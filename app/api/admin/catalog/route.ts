@@ -1,0 +1,8 @@
+import {readCatalog,mutateCatalog,dataDir} from '@/lib/store';
+import {requireAdmin,requireOrigin,jsonBody,apiError,HttpError} from '@/lib/security';
+import {editorSchema} from '@/lib/validation';
+import {promises as fs} from 'node:fs';
+import path from 'node:path';
+export const runtime='nodejs';
+export async function GET(){try{await requireAdmin();return Response.json(await readCatalog(),{headers:{'Cache-Control':'no-store'}});}catch(e){return apiError(e);}}
+export async function PUT(request:Request){try{await requireAdmin();requireOrigin(request);const parsed=editorSchema.safeParse(await jsonBody(request));if(!parsed.success)throw new HttpError(400,parsed.error.issues[0]?.message||'Invalid content.');const next=parsed.data;const references=[next.settings.logo,next.settings.heroImage,next.settings.aboutImage,next.settings.aboutSectionImage,next.settings.documentationImage,next.settings.featureImage,next.settings.heroModel,...next.products.flatMap(p=>p.variants.flatMap(v=>v.images)),...next.reports.map(r=>r.file)].filter(Boolean);for(const file of new Set(references)){const base=file.startsWith('/media/')?path.join(dataDir,'uploads'):path.resolve('public/catalog');try{await fs.access(path.join(base,path.basename(file)));}catch{throw new HttpError(400,'Referenced file not found: '+file);}}await mutateCatalog(data=>{if(data.revision!==next.revision)throw new HttpError(409,'The archive changed while you were editing. Refresh and apply your changes again.');data.settings=next.settings;data.products=next.products;data.reports=next.reports;});return Response.json(await readCatalog());}catch(e){return apiError(e);}}

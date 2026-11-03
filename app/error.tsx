@@ -1,0 +1,2 @@
+'use client';
+export default function ErrorPage({reset}:{reset:()=>void}){return <main className="page-width" style={{paddingBlock:90}}><p className="eyebrow">ARCHIVE UNAVAILABLE</p><h1 style={{marginBlock:25}}>Please try again.</h1><p>The archive could not load. Your saved records have not been changed.</p><button className="button solid" style={{marginTop:30}} onClick={reset}>Reload archive</button></main>}

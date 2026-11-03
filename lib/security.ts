@@ -1,0 +1,16 @@
+import 'server-only';
+import {cookies} from 'next/headers';
+import {createHash,createHmac,randomBytes,timingSafeEqual} from 'node:crypto';
+export class HttpError extends Error{constructor(public status:number,message:string){super(message);}}
+export function configured(){return !!process.env.ADMIN_PASSWORD&&!!process.env.SESSION_SECRET&&process.env.SESSION_SECRET.length>=32;}
+export function equalSecret(a:string,b:string){return timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());}
+function signature(data:string){return createHmac('sha256',process.env.SESSION_SECRET||'').update(data).digest('base64url');}
+export function issueSession(){const body=Buffer.from(JSON.stringify({expires:Date.now()+8*3600*1000,nonce:randomBytes(24).toString('hex'),version:createHash('sha256').update(process.env.ADMIN_PASSWORD||'').digest('hex')})).toString('base64url');return body+'.'+signature(body);}
+export async function isAdmin(){if(!configured())return false;const token=(await cookies()).get('archive_session')?.value;if(!token)return false;const [body,sig,extra]=token.split('.');if(!body||!sig||extra||!equalSecret(sig,signature(body)))return false;try{const data=JSON.parse(Buffer.from(body,'base64url').toString());return typeof data.expires==='number'&&data.expires>Date.now()&&equalSecret(data.version,createHash('sha256').update(process.env.ADMIN_PASSWORD||'').digest('hex'));}catch{return false;}}
+export async function requireAdmin(){if(!await isAdmin())throw new HttpError(401,'Please sign in again.');}
+export function requireOrigin(request:Request){const origin=request.headers.get('origin');const url=new URL(request.url);const expected=process.env.APP_ORIGIN||url.protocol+'//'+(request.headers.get('host')||url.host);if(!origin||origin!==expected){console.warn('Archive origin mismatch',{origin,expected,host:request.headers.get('host')});throw new HttpError(403,'Request origin not allowed.');}}
+export async function jsonBody(request:Request,max=1024*1024){if(Number(request.headers.get('content-length')||0)>max)throw new HttpError(413,'Request too large.');const raw=await request.text();if(Buffer.byteLength(raw)>max)throw new HttpError(413,'Request too large.');try{return JSON.parse(raw);}catch{throw new HttpError(400,'Invalid JSON.');}}
+const buckets=new Map<string,{count:number;until:number}>();
+export function rateLimit(request:Request,kind:string,max:number){const ip=request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'local';const key=kind+':'+ip,now=Date.now(),old=buckets.get(key);if(buckets.size>2000)for(const [k,v] of buckets)if(v.until<now)buckets.delete(k);const bucket=old&&old.until>now?old:{count:0,until:now+15*60*1000};bucket.count++;buckets.set(key,bucket);if(bucket.count>max)throw new HttpError(429,'Too many attempts. Please try again in 15 minutes.');}
+export function apiError(error:unknown){if(error instanceof HttpError)return Response.json({error:error.message},{status:error.status});console.error('Archive operation failed',error);return Response.json({error:'Unable to complete the operation. Please try again.'},{status:500});}
+export const sessionOptions={httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'strict' as const,path:'/',maxAge:8*3600};

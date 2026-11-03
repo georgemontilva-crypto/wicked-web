@@ -1,0 +1,6 @@
+import {promises as fs} from 'node:fs';
+import path from 'node:path';
+import {dataDir,readCatalog,publicCatalog} from '@/lib/store';
+import {isAdmin} from '@/lib/security';
+const types:Record<string,string>={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',webp:'image/webp',glb:'model/gltf-binary'};
+export async function GET(_request:Request,{params}:{params:Promise<{file:string}>}){const {file}=await params;if(!/^[a-f0-9-]{36}\.(pdf|png|jpg|webp|glb)$/.test(file))return new Response('Not found',{status:404});try{if(!await isAdmin()){const d=publicCatalog(await readCatalog()),url='/media/'+file;const visible=[d.settings.logo,d.settings.heroImage,d.settings.documentationImage,d.settings.featureImage,d.settings.aboutImage,d.settings.aboutSectionImage,d.settings.heroModel,...d.products.flatMap(p=>p.variants.flatMap(v=>v.images)),...d.reports.map(r=>r.file)];if(!visible.includes(url))return new Response('Not found',{status:404});}const bytes=await fs.readFile(path.join(dataDir,'uploads',file));const ext=file.split('.').pop()!;return new Response(bytes,{headers:{'Content-Type':types[ext],'X-Content-Type-Options':'nosniff','Content-Disposition':(ext==='pdf'?'inline':'inline')+'; filename="'+file+'"','Cache-Control':'private, no-store'}});}catch{return new Response('Not found',{status:404});}}

@@ -1,0 +1,3 @@
+import {mutateCatalog,readCatalog} from '@/lib/store';
+import {requireAdmin,requireOrigin,jsonBody,apiError,HttpError} from '@/lib/security';
+export async function PATCH(request:Request){try{await requireAdmin();requireOrigin(request);const body=await jsonBody(request,2000);if(typeof body.id!=='string'||typeof body.read!=='boolean')throw new HttpError(400,'Invalid message update.');await mutateCatalog(data=>{const message=data.messages.find(m=>m.id===body.id);if(!message)throw new HttpError(404,'Message not found.');message.read=body.read;});const data=await readCatalog();return Response.json({revision:data.revision,messages:data.messages});}catch(e){return apiError(e);}}

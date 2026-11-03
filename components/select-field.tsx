@@ -1,0 +1,3 @@
+'use client';
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
+export function SelectField({value,onChange,options,label,placeholder='Select',disabled=false}:{value:string;onChange:(v:string)=>void;options:{value:string;label:string}[];label:string;placeholder?:string;disabled?:boolean}){return <Select value={value||undefined} onValueChange={onChange} disabled={disabled}><SelectTrigger aria-label={label} style={{width:'100%',height:44,borderRadius:10,background:'#fff',fontSize:14}}><SelectValue placeholder={placeholder}/></SelectTrigger><SelectContent>{options.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>}
