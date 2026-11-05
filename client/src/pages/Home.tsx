@@ -68,7 +68,7 @@ function Hero({ products }: { products: CatalogProduct[] }) {
     <section className="relative overflow-hidden">
       {/* Giant outlined name of the flavour, drifting behind the pack */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-[4%] select-none overflow-hidden">
-        <p key={current.slug} className="outline-text warp-in whitespace-nowrap text-center text-[clamp(5rem,19vw,17rem)] leading-none opacity-30">
+        <p key={current.slug} className="outline-text warp-in whitespace-nowrap text-center text-[clamp(5rem,19vw,17rem)] leading-none opacity-[0.16]">
           {current.name}
         </p>
       </div>
