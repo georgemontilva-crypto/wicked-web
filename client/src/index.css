@@ -1,0 +1,585 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   WICK'D — sistema visual
+
+   Sale de los empaques: galaxias y nebulosas detrás de cada pouch, el logo
+   blanco con contorno negro grueso tipo sticker, nubes de color, el dorado del
+   badder y UN color por sabor. Todo el sitio toma ese color de --accent: al
+   elegir un sabor, cambian la nebulosa, los botones, los bordes y el brillo.
+
+   Fugaz One (itálica pesada, la familia del logo) para títulos.
+   Montserrat (la del nombre del sabor en el empaque) para todo lo demás.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --color-space: #07030f;
+  --color-void: #0e0619;
+  --color-deep: #170b2a;
+  --color-star: #f7f3ff;
+  --color-haze: #b7abd1;
+  --color-rule: rgba(247, 243, 255, 0.12);
+  --color-gold: #ffc23d;
+  --color-gold-2: #ff9d1c;
+  --color-accent: var(--accent);
+
+  --font-sans: "Montserrat Variable", system-ui, sans-serif;
+  --font-display: "Fugaz One", "Montserrat Variable", system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  /* Sin sabor a la vista, el acento es el violeta del logo del favicon. */
+  --accent: #8b45ff;
+  --accent-soft: color-mix(in oklab, var(--accent) 30%, transparent);
+  --accent-ink: color-mix(in oklab, var(--accent) 55%, #07030f);
+  --gold: linear-gradient(180deg, #ffe08a 0%, #ffc23d 45%, #ff9d1c 100%);
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-rule);
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+  body {
+    background: var(--color-space);
+    color: var(--color-star);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.6s ease;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: 0.005em;
+  }
+  a[href],
+  button:not(:disabled),
+  select:not(:disabled),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
+  img {
+    -webkit-user-drag: none;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* ─── Tipos ───────────────────────────────────────────────────────────────
+     .sticker: el título blanco con contorno negro y sombra del color del
+     sabor, como el logo pegado sobre el empaque.
+     .label: el rótulo pequeño, ancho y espaciado ("SMOOTH | POTENT | PREMIUM"). */
+  .sticker {
+    font-family: var(--font-display);
+    color: #fff;
+    -webkit-text-stroke: 0.09em #000;
+    paint-order: stroke fill;
+    text-shadow:
+      0.06em 0.07em 0 #000,
+      0.11em 0.13em 0 var(--accent);
+    transition: text-shadow 0.5s ease;
+  }
+  .sticker-quiet {
+    font-family: var(--font-display);
+    color: #fff;
+    -webkit-text-stroke: 0.08em #000;
+    paint-order: stroke fill;
+    text-shadow: 0.06em 0.07em 0 #000;
+  }
+  .outline-text {
+    font-family: var(--font-display);
+    color: transparent;
+    -webkit-text-stroke: 1.5px color-mix(in oklab, var(--accent) 70%, white);
+  }
+  .label {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  /* Nombre del sabor: Montserrat ExtraBold en caja alta, como en el pouch. */
+  .strain {
+    font-family: var(--font-sans);
+    font-weight: 850;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+  }
+  .text-gold {
+    background: var(--gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* ─── Píldoras y chips ──────────────────────────────────────────────────── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    background: rgba(14, 6, 25, 0.6);
+    backdrop-filter: blur(8px);
+    color: var(--color-star);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      transform 0.25s var(--ease-spring),
+      border-color 0.2s,
+      background 0.2s,
+      color 0.2s;
+  }
+  .chip:hover {
+    border-color: color-mix(in oklab, var(--accent) 70%, white);
+    transform: translateY(-2px);
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-current="true"] {
+    background: var(--accent);
+    border-color: #000;
+    color: #fff;
+    box-shadow: 3px 3px 0 #000;
+  }
+  .dot {
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px #000;
+    flex: none;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.32em 0.7em 0.28em;
+    border-radius: 6px;
+    background: #000;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .badge-accent {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 2px 2px 0 #000;
+  }
+
+  /* Compatibilidad con el panel: .tag = chip pequeño con borde de acento. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.38em 0.8em;
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .tag-quiet {
+    border-color: var(--color-rule);
+  }
+
+  /* ─── Botones ───────────────────────────────────────────────────────────── */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    padding: 0.95em 1.6em;
+    border-radius: 999px;
+    border: 2.5px solid #000;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      transform 0.2s var(--ease-spring),
+      box-shadow 0.2s,
+      background 0.2s,
+      color 0.2s;
+  }
+  .btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 #000 !important;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .btn-accent:hover {
+    transform: translate(-1px, -2px) rotate(-1deg);
+    box-shadow: 6px 7px 0 #000;
+  }
+  .btn-white {
+    background: #fff;
+    color: #000;
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .btn-white:hover {
+    transform: translate(-1px, -2px) rotate(1deg);
+    box-shadow: 6px 7px 0 var(--accent);
+  }
+  .btn-gold {
+    background: var(--gold);
+    color: #2a1300;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .btn-gold:hover {
+    transform: translate(-1px, -2px) rotate(-1deg);
+    box-shadow: 6px 7px 0 #000;
+  }
+  .btn-line {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(14, 6, 25, 0.5);
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
+  .btn-line:hover {
+    border-color: var(--accent);
+    color: #fff;
+  }
+  /* Alias del panel. */
+  .btn-fire {
+    background: var(--accent);
+    color: #fff;
+    border-color: #000;
+    box-shadow: 3px 3px 0 #000;
+  }
+  .btn-fire:hover {
+    filter: brightness(1.1);
+  }
+
+  /* ─── Superficies ───────────────────────────────────────────────────────── */
+  .panel {
+    border: 1px solid var(--color-rule);
+    background: linear-gradient(180deg, rgba(23, 11, 42, 0.78), rgba(10, 4, 20, 0.82));
+    border-radius: 22px;
+    backdrop-filter: blur(14px);
+  }
+  .panel-accent {
+    border: 2px solid color-mix(in oklab, var(--accent) 65%, transparent);
+    box-shadow:
+      0 0 0 1px #000,
+      0 24px 80px -30px var(--accent);
+  }
+  .card-sticker {
+    border: 3px solid #000;
+    border-radius: 26px;
+    box-shadow: 6px 6px 0 #000;
+  }
+
+  /* El fondo de un producto: nebulosa de su color + estrellas pequeñas. */
+  .nebula {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% 105%, color-mix(in oklab, var(--accent) 75%, #fff 5%) 0%, transparent 60%),
+      radial-gradient(70% 60% at 85% 10%, color-mix(in oklab, var(--accent) 45%, transparent) 0%, transparent 70%),
+      radial-gradient(60% 50% at 10% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 70%),
+      linear-gradient(180deg, #0b0418 0%, color-mix(in oklab, var(--accent) 22%, #0b0418) 100%);
+  }
+  .nebula::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 72% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 38% 42%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 88% 48%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 22% 68%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 60% 76%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 92% 82%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 48% 8%, #fff 50%, transparent 51%);
+    opacity: 0.7;
+  }
+
+  /* Nubes del empaque, en el pie de las secciones. */
+  .clouds {
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 120px;
+    pointer-events: none;
+    background:
+      radial-gradient(60px 50px at 5% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(90px 70px at 16% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(70px 55px at 28% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(110px 80px at 42% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(80px 60px at 56% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(120px 85px at 71% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(70px 55px at 84% 100%, var(--cloud, #fff) 98%, transparent 100%),
+      radial-gradient(100px 75px at 96% 100%, var(--cloud, #fff) 98%, transparent 100%);
+  }
+
+  /* Borde rasgado del sitio anterior (torn-edge.svg) como máscara. */
+  .torn-top {
+    -webkit-mask: url("/brand/torn-edge.svg") top / 100% 28px no-repeat, linear-gradient(#000, #000) 0 27px / 100% calc(100% - 27px) no-repeat;
+    mask: url("/brand/torn-edge.svg") top / 100% 28px no-repeat, linear-gradient(#000, #000) 0 27px / 100% calc(100% - 27px) no-repeat;
+  }
+
+  /* ─── Producto flotando ─────────────────────────────────────────────────── */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .glow-drop {
+    filter: drop-shadow(0 30px 40px color-mix(in oklab, var(--accent) 55%, transparent))
+      drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  }
+  .pack-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 2%;
+    width: 52%;
+    height: 7%;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
+    filter: blur(6px);
+    animation: shadow 6s ease-in-out infinite;
+  }
+
+  /* ─── Cinta de texto ────────────────────────────────────────────────────── */
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee > div {
+    display: flex;
+    flex: none;
+    gap: 2.5rem;
+    padding-right: 2.5rem;
+    animation: marquee var(--marquee-speed, 32s) linear infinite;
+  }
+  .marquee-band {
+    background: var(--accent);
+    border-block: 3px solid #000;
+    color: #fff;
+    transition: background 0.5s ease;
+  }
+
+  /* ─── Formularios (público y panel) ─────────────────────────────────────── */
+  .field {
+    width: 100%;
+    border-radius: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    background: rgba(7, 3, 15, 0.7);
+    padding: 0.85rem 1rem;
+    color: #fff;
+    font-size: 1rem;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field::placeholder {
+    color: rgba(247, 243, 255, 0.38);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  select.field {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
+    background-position:
+      calc(100% - 20px) 55%,
+      calc(100% - 14px) 55%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 2.5rem;
+  }
+
+  /* ─── Panel de administración ───────────────────────────────────────────── */
+  .admin {
+    --accent: #8b45ff;
+    background: #07030f;
+    min-height: 100vh;
+    font-size: 0.95rem;
+  }
+  .admin :is(h1, h2, h3) {
+    font-family: var(--font-display);
+    text-transform: none;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .reveal {
+    opacity: 0;
+    translate: 0 28px;
+    transition:
+      opacity 0.8s var(--ease-out-expo),
+      translate 0.8s var(--ease-out-expo);
+  }
+  .reveal.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -14px;
+  }
+}
+@keyframes shadow {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 0.9;
+  }
+  50% {
+    scale: 0.82;
+    opacity: 0.6;
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes spin-slow {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    scale: 0.6;
+    rotate: -8deg;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+@keyframes warp-in {
+  0% {
+    opacity: 0;
+    scale: 0.7;
+    filter: blur(10px) brightness(2);
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    filter: blur(0) brightness(1);
+  }
+}
+@keyframes drip {
+  0% {
+    transform: scaleY(0);
+  }
+  60% {
+    transform: scaleY(1.05);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+.warp-in {
+  animation: warp-in 0.7s var(--ease-out-expo) both;
+}
+.pop-in {
+  animation: pop-in 0.6s var(--ease-spring) both;
+}
+.spin-slow {
+  animation: spin-slow 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    translate: none;
+  }
+}
