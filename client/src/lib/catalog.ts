@@ -1,7 +1,7 @@
 import { isHexColor } from "@shared/const";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { CSSProperties } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { AppRouter } from "../../../server/routers";
 
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
@@ -63,29 +63,39 @@ export function useSiteAccent(color: string | null | undefined) {
   );
 }
 
-/** Adds .is-in to elements with .reveal once they scroll into view. */
-export function useReveal(deps: unknown[] = []) {
+/**
+ * Adds .is-in to elements with .reveal once they scroll into view.
+ *
+ * Runs after every render (not on a deps list), so cards that appear when a
+ * filter changes are picked up even if the number of results stayed the same.
+ * The `_deps` argument is kept for existing callers and ignored.
+ */
+export function useReveal(_deps: unknown[] = []) {
+  const io = useRef<IntersectionObserver | null>(null);
   useEffect(() => {
-    const items = Array.from(document.querySelectorAll<HTMLElement>(".reveal:not(.is-in)"));
+    const items = Array.from(document.querySelectorAll<HTMLElement>(".reveal:not(.is-in):not([data-reveal])"));
+    if (!items.length) return;
     if (!("IntersectionObserver" in window)) {
       items.forEach(el => el.classList.add("is-in"));
       return;
     }
-    const io = new IntersectionObserver(
+    io.current ??= new IntersectionObserver(
       entries => {
         for (const e of entries) {
           if (e.isIntersecting) {
             e.target.classList.add("is-in");
-            io.unobserve(e.target);
+            io.current?.unobserve(e.target);
           }
         }
       },
       { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
     );
-    items.forEach(el => io.observe(el));
-    return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+    items.forEach(el => {
+      el.dataset.reveal = "1";
+      io.current!.observe(el);
+    });
+  });
+  useEffect(() => () => io.current?.disconnect(), []);
 }
 
 /** "duo-white-runtz" → same flavour in another line, matched by name. */

@@ -52,6 +52,19 @@ function Hero({ products }: { products: CatalogProduct[] }) {
     return () => window.clearInterval(timer);
   }, [groups, lineIdx]);
 
+  // Keep the active line and flavour chips in view inside their scrolling rows
+  // (phones), without moving the page itself.
+  const tabsRow = useRef<HTMLDivElement>(null);
+  const flavorsRow = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    for (const row of [tabsRow.current, flavorsRow.current]) {
+      const on = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (!row || !on || row.scrollWidth <= row.clientWidth) continue;
+      const left = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+      row.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }
+  }, [lineIdx, flavorIdx]);
+
   const pickLine = (i: number) => {
     auto.current = false;
     setLineIdx(i);
@@ -73,28 +86,29 @@ function Hero({ products }: { products: CatalogProduct[] }) {
         </p>
       </div>
 
-      <div className="container relative grid min-h-[calc(100svh-72px)] items-center gap-6 pb-10 pt-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-0">
-        <div className="order-2 lg:order-1">
-          <p className="label flex items-center gap-2 text-white/70">
+      {/* Phones: title, pack, then the pickers right under it, so the pack
+          stays on screen while choosing. Desktop: copy left, pack right. */}
+      <div className="container relative grid items-center pb-10 pt-3 lg:min-h-[calc(100svh-72px)] lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-0">
+        <div className="max-lg:contents lg:order-1">
+          <p className="label hidden items-center gap-2 text-white/70 lg:flex">
             <Spark className="h-3.5 w-3.5 text-[var(--accent)]" /> Smooth · Potent · Premium
           </p>
-          <h1 className="sticker mt-4 text-[clamp(3.2rem,9vw,7.4rem)]">
-            Get
-            <br />
+          <h1 className="sticker order-1 text-center text-[clamp(2.5rem,12vw,3.2rem)] lg:mt-4 lg:text-left lg:text-[clamp(3.2rem,9vw,7.4rem)]">
+            Get <br className="hidden lg:inline" />
             <span className="inline-block -rotate-2">WICK'D.</span>
           </h1>
-          <p className="mt-5 max-w-md text-lg text-white/75">
+          <p className="order-6 mt-6 max-w-md text-white/75 lg:mt-5 lg:text-lg">
             Four lines, twenty-four flavors and a lab report for every batch. Pick a line, pick a flavor, watch it light up.
           </p>
 
-          <div role="tablist" aria-label="Product lines" className="no-scrollbar -mx-1 mt-7 flex gap-2 overflow-x-auto px-1 pb-1">
+          <div ref={tabsRow} role="tablist" aria-label="Product lines" className="no-scrollbar relative order-3 -mx-5 mt-1 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:mt-7 lg:px-0">
             {groups.map((g, i) => (
-              <button key={g.name} role="tab" type="button" aria-selected={i === lineIdx} aria-pressed={i === lineIdx} onClick={() => pickLine(i)} className="chip">
+              <button key={g.name} role="tab" type="button" aria-selected={i === lineIdx} aria-pressed={i === lineIdx} onClick={() => pickLine(i)} className="chip flex-none">
                 {g.info?.kind ?? g.name}
               </button>
             ))}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Flavors">
+          <div ref={flavorsRow} className="no-scrollbar relative order-4 -mx-5 mt-2.5 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:mt-4 lg:flex-wrap lg:overflow-visible lg:px-0" aria-label="Flavors">
             {line?.items.map((p, i) => (
               <button
                 key={p.slug}
@@ -102,7 +116,7 @@ function Hero({ products }: { products: CatalogProduct[] }) {
                 onClick={() => pickFlavor(i)}
                 aria-pressed={i === flavorIdx}
                 style={accentStyle(p.accentColor)}
-                className="chip !text-[0.72rem]"
+                className="chip flex-none !text-[0.72rem]"
               >
                 <span className="dot" />
                 {p.name}
@@ -110,17 +124,17 @@ function Hero({ products }: { products: CatalogProduct[] }) {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={`/products/${current.slug}`} className="btn btn-accent">
-              See {current.name} <ArrowRight className="h-5 w-5" />
+          <div className="order-5 mt-4 flex gap-3 lg:mt-8 lg:flex-wrap">
+            <Link href={`/products/${current.slug}`} className="btn btn-accent max-lg:flex-1 max-lg:!px-4">
+              <span className="truncate">See {current.name}</span> <ArrowRight className="h-5 w-5 flex-none" />
             </Link>
-            <Link href="/products" className="btn btn-line">
-              All products
+            <Link href="/products" className="btn btn-line max-lg:!px-4">
+              All<span className="hidden sm:inline"> products</span>
             </Link>
           </div>
         </div>
 
-        <div className="relative order-1 mx-auto w-full max-w-[34rem] lg:order-2">
+        <div className="relative order-2 mx-auto my-3 w-[min(100%,40svh)] max-w-[34rem] lg:order-2 lg:my-0 lg:w-full">
           {/* rotating ring of text */}
           <svg viewBox="0 0 500 500" aria-hidden="true" className="spin-slow absolute inset-[-4%] h-[108%] w-[108%] opacity-80">
             <defs>
@@ -138,12 +152,12 @@ function Hero({ products }: { products: CatalogProduct[] }) {
             <Tilt className="absolute inset-[6%]" max={16}>
               <FloatingPack src={current.imageUrl} alt={`${current.name} ${current.collection}`} eager animKey={current.slug} className="h-full w-full" />
             </Tilt>
-            <span key={current.slug + "-b"} className="badge badge-accent pop-in absolute right-[6%] top-[12%] rotate-6 !text-xs">
+            <span key={current.slug + "-b"} className="badge badge-accent pop-in absolute right-[2%] top-[10%] rotate-6 lg:right-[6%] lg:top-[12%] lg:!text-xs">
               {strainLabel(current.strain)}
             </span>
-            <span className="pop-in absolute bottom-[10%] left-[2%] -rotate-6 rounded-2xl border-[3px] border-black bg-white px-3 py-2 text-black shadow-[4px_4px_0_#000]" key={current.slug + "-s"}>
-              <span className="block font-display text-lg leading-none">{line?.info?.kind ?? line?.name}</span>
-              <span className="block text-[0.62rem] font-extrabold uppercase tracking-[0.18em]">{current.subtitle}</span>
+            <span className="pop-in absolute bottom-[6%] left-[-4%] -rotate-6 rounded-xl border-[3px] border-black bg-white px-2.5 py-1.5 text-black shadow-[3px_3px_0_#000] lg:bottom-[10%] lg:left-[2%] lg:rounded-2xl lg:px-3 lg:py-2 lg:shadow-[4px_4px_0_#000]" key={current.slug + "-s"}>
+              <span className="block font-display text-sm leading-none lg:text-lg">{line?.info?.kind ?? line?.name}</span>
+              <span className="block text-[0.55rem] font-extrabold uppercase tracking-[0.14em] lg:text-[0.62rem] lg:tracking-[0.18em]">{current.subtitle}</span>
             </span>
           </div>
         </div>

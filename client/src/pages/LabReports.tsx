@@ -117,8 +117,8 @@ export default function LabReports() {
                     <img src={r.imageUrl ?? undefined} alt="" loading="lazy" className="glow-drop h-full w-full object-contain transition-transform group-hover:scale-110 group-hover:-rotate-3" />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="label text-white/60">{r.collection}</p>
-                    <p className="strain mt-1 truncate text-lg sm:text-xl">{r.productName}</p>
+                    <p className="label truncate text-white/60">{r.collection}</p>
+                    <p className="strain mt-1 text-lg leading-tight sm:truncate sm:text-xl">{r.productName}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/70">
                       <span className="font-display tracking-wide text-white">#{r.batch}</span>
                       {r.testedOn && <span>{formatDate(r.testedOn)}</span>}
@@ -126,10 +126,10 @@ export default function LabReports() {
                     </p>
                   </div>
                   <div className="flex flex-none flex-col gap-2 sm:flex-row">
-                    <button type="button" onClick={() => setOpen(r)} className="btn btn-accent !px-4 !py-2.5 !text-xs">
-                      <FileText className="h-4 w-4" /> View
+                    <button type="button" onClick={() => setOpen(r)} aria-label={`View ${r.productName} report`} className="btn btn-accent !px-3 !py-2.5 !text-xs sm:!px-4">
+                      <FileText className="h-4 w-4" /> <span className="hidden sm:inline">View</span>
                     </button>
-                    <a href={r.fileUrl} download className="btn btn-line !px-4 !py-2.5 !text-xs" aria-label={`Download ${r.productName} report`}>
+                    <a href={r.fileUrl} download className="btn btn-line !px-3 !py-2.5 !text-xs sm:!px-4" aria-label={`Download ${r.productName} report`}>
                       <Download className="h-4 w-4" />
                     </a>
                   </div>

@@ -1,7 +1,7 @@
 import { Toaster } from "sonner";
 
 import { lazy, Suspense, useLayoutEffect } from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, useLocation, useSearch } from "wouter";
 
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
@@ -31,6 +31,10 @@ const AdminSubscribers = lazy(() => import("@/pages/admin/AdminSubscribers"));
  */
 function ScrollToTop() {
   const [location] = useLocation();
+  // Changing line (/products?line=…) is a new page for the visitor too: a
+  // footer or menu link to another line must land at the top, not stay down
+  // by the footer. Other filters (type, search) keep the scroll.
+  const line = new URLSearchParams(useSearch()).get("line") ?? "";
 
   useLayoutEffect(() => {
     if ("scrollRestoration" in window.history) {
@@ -41,8 +45,8 @@ function ScrollToTop() {
   useLayoutEffect(() => {
     // A link straight to a section (#lab-reports) should land on it.
     if (window.location.hash) return;
-    window.scrollTo(0, 0);
-  }, [location]);
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [location, line]);
 
   return null;
 }
